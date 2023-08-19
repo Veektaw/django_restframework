@@ -5,7 +5,7 @@ from django.forms.models import model_to_dict
 from products.models import Product
 from products.serializers import ProductSerializer
 
-@api_view(["GET", "POST"])
+@api_view(["GET"])
 def api_home(request, *args, **kwargs):
     
     "This gets the products at random"
@@ -18,4 +18,19 @@ def api_home(request, *args, **kwargs):
     
     return Response(data)
 
+
+@api_view(["POST"])
+def api_home(request, *args, **kwargs):
+    
+    "This gets the products at random"
+
+    
+    serializer = ProductSerializer(data=request.data)
+    
+    if serializer.is_valid(raise_exception=True): # The exception will show you what field is failing
+        serializer.save()
+        data = serializer.data
+
+        return Response(data)
+    return Response({" invalid": "not good data"}, status=400)
  
