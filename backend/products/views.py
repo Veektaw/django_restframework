@@ -1,16 +1,15 @@
-from rest_framework import generics, mixins
+from rest_framework import generics, mixins, authentication, permissions
 from .models import Product
 from .serializers import ProductSerializer
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
-
+from .permissions import IsStaffEditorPermission
 
 
 
 
 ######## Class based views
-
 
 class ProductDetailAPIView(generics.RetrieveAPIView):
     queryset = Product.objects.all()
@@ -49,7 +48,7 @@ class ProductDeleteAPIView(generics.DestroyAPIView):
 
 ########### Mixins
 
-class ProductMixinView(mixins.ListModelMixin, mixins.RetrieveModelMixin, generics.GenericAPIView):
+class ProductMixinView(mixins.CreateModelMixin, mixins.ListModelMixin, mixins.RetrieveModelMixin, generics.GenericAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     lookup_field = 'pk'
@@ -59,8 +58,30 @@ class ProductMixinView(mixins.ListModelMixin, mixins.RetrieveModelMixin, generic
         if pk is not None:
             return self.retrieve( request, *args, **kwargs) 
         return self.list(request, *args, **kwargs)
+    
+    def post(self, request, *args, **kwargs):
+        return self.create( request, *args, **kwargs) 
 
 
+
+
+
+
+
+class ProductListCreateAPIView(generics.ListCreateAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    authentication_classes = [authentication.SessionAuthentication, authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAdminUser, IsStaffEditorPermission]
+    
+    def perform_create(self, serializer):
+        serializer.save()
+        title = serializer.validated_data.get('title')
+        content = serializer. validated_data.get('content') or None
+        
+        if content is None:
+            content = title
+        serializer.save (content=content)
 
 
 
