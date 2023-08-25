@@ -15,11 +15,11 @@ class ProductSerializer(serializers.ModelSerializer):
            'owner', 'info', 'pk', 'url', 'title', 'content', 'price', 'sale_price',
         ]
         
-    # def validate_title(self, value):
-    #     queryset = Product.objects.filter(title__iexact=value) ## iexact checks for case sensitive data
-    #     if queryset.exists:
-    #         raise serializers.ValidationError(f"{value} exists")
-    #     return value
+    def validate_title(self, value):
+        queryset = Product.objects.filter(title__iexact=value)
+        if queryset.exists():
+            raise serializers.ValidationError(f"{value} already exists.")
+        return value
     
     def get_url(self, obj): ### This attaches the URL to the field
         request = self.context.get ('request')
